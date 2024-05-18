@@ -1,0 +1,58 @@
+setwd("~/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data")
+options(scipen=999, dplyr.width = Inf, tibble.print_min = 50, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror#
+#
+#load libraries#
+pacman::p_load(#
+				ggplot2, #
+				ggstatsplot,#
+               dplyr, #
+               lubridate, #
+               tidyverse,   #
+               broom,  #
+               FSA,      #
+               glmmTMB,  #
+               lme4,   #
+               tidyr,      #
+               DescTools,#
+               scales,#
+               ggpubr,#
+               grid,#
+               lattice,#
+               sjPlot,#
+               sjlabelled,#
+               sjmisc,#
+               cowplot, #
+               broom.mixed,#
+               ggforce, #
+               gridGraphics,#
+               ggeffects,#
+               magrittr,#
+               MCMCglmm,#
+               data.table,#
+               lattice,#
+               stats,#
+               cowplot,#
+               krsp#
+)#
+select<-dplyr::select#
+filter<-dplyr::filter#
+###############################
+#  importing  data and formatting it
+#all the data cleaning is here #
+#original code by A. R. Martinig#
+#last edited on May 15, 2024 by A. R. Martinig #
+#
+options(scipen=999, dplyr.width = Inf, tibble.print_min = 50, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror#
+#
+#load libraries#
+pacman::p_load(#
+				dplyr,#
+				lubridate,#
+				tidyverse,#
+				data.table,#
+				lme4,#
+               	krsp#
+)#
+#
+select<-dplyr::select#
+filter<-dplyr::filter
