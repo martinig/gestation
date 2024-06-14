@@ -10,7 +10,7 @@
 
 #mean center and standardize numerical variables before running model
 
-mating2<-read.csv("final_dataset.csv") %>% 
+mating2<-gest %>% 
 	ungroup() %>%
 	group_by(grid, year) %>%
 	mutate(
