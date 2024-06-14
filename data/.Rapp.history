@@ -1,44 +1,13 @@
-setwd("~/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data")
-options(scipen=999, dplyr.width = Inf, tibble.print_min = 50, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror#
+#working directory here#
+#original code by A. R. Martinig#
+#last edited May 15, 2024 by A. R. Martinig#
 #
-#load libraries#
-pacman::p_load(#
-				ggplot2, #
-				ggstatsplot,#
-               dplyr, #
-               lubridate, #
-               tidyverse,   #
-               broom,  #
-               FSA,      #
-               glmmTMB,  #
-               lme4,   #
-               tidyr,      #
-               DescTools,#
-               scales,#
-               ggpubr,#
-               grid,#
-               lattice,#
-               sjPlot,#
-               sjlabelled,#
-               sjmisc,#
-               cowplot, #
-               broom.mixed,#
-               ggforce, #
-               gridGraphics,#
-               ggeffects,#
-               magrittr,#
-               MCMCglmm,#
-               data.table,#
-               lattice,#
-               stats,#
-               cowplot,#
-               krsp#
-)#
-select<-dplyr::select#
-filter<-dplyr::filter#
-###############################
-#  importing  data and formatting it
-#all the data cleaning is here #
+#Delete previous information stored #
+rm(list=ls(all=T))#
+#
+##set wd to the folder with all your csv's in it#
+setwd("~/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data")
+#script to download packages and set formatting for plots#
 #original code by A. R. Martinig#
 #last edited on May 15, 2024 by A. R. Martinig #
 #
@@ -55,4 +24,285 @@ pacman::p_load(#
 )#
 #
 select<-dplyr::select#
-filter<-dplyr::filter
+filter<-dplyr::filter#
+#conserved theme across plots for plots#
+#general theme#
+theme_squirrel <-#
+	theme_bw() +#
+	theme(axis.line = element_line(colour = "black"),#
+        axis.text=element_text(size=15), #changes size of axes #s#
+        axis.title=element_text(size=15), #changes size of axes labels#
+        panel.grid.major = element_blank(),#
+        panel.grid.minor = element_blank(),#
+        panel.border = element_blank(),#
+        panel.background = element_blank(),#
+        text = element_text(size = 15)) #
+#dot-whisker plot theme       #
+theme_squirrel_dot <- #
+	theme_bw() +#
+ 	theme(plot.margin = margin(0, 0.5, 0, 0, "cm"),#
+		axis.line=element_line(),#
+		axis.line.y=element_blank(),#
+		axis.ticks.length=unit(0.4, "cm"),#
+		axis.ticks.y=element_blank(),#
+    	axis.text=element_text(size=10), #changes size of axes #s#
+        axis.title=element_text(size=15), #changes size of axes labels#
+        panel.grid.major = element_blank(),#
+        panel.grid.minor = element_blank(),#
+        panel.border = element_blank(),#
+        panel.background = element_blank(),#
+        text = element_text(size = 10))
+###############################
+#  importing  data and formatting it  ##
+###############################
+#
+#import Data#
+con <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",#
+                  dbname ="krsp",#
+           user="amartinig",#
+           password = keyring::key_get("krsp")#
+)#
+#
+all <- tbl(con, "flastall2") %>% #
+  	collect() %>%#
+  	select(squirrel_id, byear)#
+#
+litter <- tbl(con, "litter") %>% #
+  	collect() %>%#
+  	# remove squirrels with no id#
+  	filter(!is.na(squirrel_id)) %>%#
+  	mutate(fieldBDate=ymd(fieldBDate)) %>%#
+  	left_join(all, by=c("squirrel_id")) %>%#
+  	select(id, squirrel_id, year=yr, date1, fieldBDate, mom_byear=byear)#
+summary(litter)#
+#
+juv <- tbl(con, "juvenile") %>% #
+  	collect() %>%#
+  	group_by(litter_id) %>%#
+  	mutate(n_pups=n()) %>% #
+  	select(litter_id, n_pups)#
+#
+rep<-left_join(litter, juv, by=c("id"="litter_id"))#
+#
+new_beh <- tbl(con, "behaviour") %>% #
+  	collect() %>%#
+  	group_by(squirrel_id, date) %>%#
+  	filter(#
+  		row_number()==1, #
+  		!is.na(squirrel_id), #
+  		behaviour==22 | id %in% c(1059, 3133, 3282, 3600, 13747, 23017, 30563, 39330, 39455, 39457, 49626, 49704, 49749, 49807, 49869, 49908, 49910, 50564, 50798, 50799, 50800, 50810, 50812, 50817, 51019, 51516, 52355, 52388, 53410, 78033, 78239, 78253, 78335, 78936, 79142, 79477, 80334, 80924, 95969, 96167, 96376, 96480, 97442, 97632, 104553, 104563, 104572, 104943, 104965, 104999, 105722, 106137, 106138, 106206, 106864, 107274, 107567, 107568, 107746, 107748, 108034, 108258, 109073, 109110, 109657, 120601, 120703, 121142, 125998, 126008, 126048, 126157, 127504, 131378, 131391, 182890, 183025, 183041, 184170, 184454, 184485, 184636, 184637, 375671, 382716, 384671, 384673, 389904, 389989, 410883)) %>% #
+  	mutate(date=ymd(date)) %>% #
+  	mutate(year=year(date)) %>%#
+  	select(squirrel_id, year, date, grid, time) %>%#
+  	ungroup()#
+old_beh <- tbl(con, "dbabehaviour") %>% #
+  	collect() %>%#
+  	group_by(squirrel_id, date) %>%#
+  	filter(#
+  		row_number()==1, #
+  		!is.na(squirrel_id), #
+  		beh==22 | id %in% c(13747, 23017, 30563, 39330, 39455, 39457, 49626, 49704, 49749, 49807, 49869, 49908, 49910, 50564, 50731, 50798, 50799, 50800, 51019, 52355, 52388, 53410, 78003, 78033, 78133, 78239, 78253, 78335, 78752, 78808, 78936, 79142, 79477, 80334, 80924, 95969, 96167, 96376, 96425, 96480, 97249, 97442, 97632, 104553, 104563, 104572, 104965, 104999, 105722, 106137, 106138, 106206, 106864, 107274, 107567, 107746, 107748, 108713, 109073, 109110, 109657, 120601, 120703, 121142)) %>% #
+  	mutate(date=ymd(date)) %>% #
+  	mutate(year=year(date)) %>%#
+  	select(squirrel_id, year, date, grid, time) %>%#
+  	ungroup()     #
+#importing Ryan Taylor's data#
+ryan<-read.csv("Chase data 2008.csv", header=T) %>%#
+	mutate(date=mdy(Date)) %>%#
+	mutate(year=year(date)) %>%#
+	group_by(dam_taglft, date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup() %>%#
+	left_join((tbl(con, "litter") %>% collect()), by=c("dam_taglft"="mTagLft", "year"="yr")) %>% #
+	select(squirrel_id, year, date, grid, time) #
+#
+#importing Jeff Lane's data#
+jeff<-read.csv("chase data JEL.csv", header=T) %>%#
+	mutate(date=dmy(date)) %>%#
+	mutate(year=year(date), #
+			month=month(date)) %>%#
+	left_join((tbl(con, "litter") %>% collect()), by=c("left_tag"="mTagLft", "year"="yr")) %>% #
+	mutate(squirrel_id=ifelse(mTagRt=="C6644", 6342, squirrel_id)) %>% #because the left tag is a rip, need to make sure it gets the right squirrel_id based on the right tag#
+	group_by(left_tag, month) %>% #squirrel 7278 (tags D5285/D5286) has two mating chases in same month, so I picked the later one#
+	filter(row_number()==1) %>%#
+	ungroup() %>%#
+	select(squirrel_id, year, date, grid=grid.x, time)
+###################################
+# Means calculated per Grid Year ##
+###################################
+cone_counts<-tbl(con, "cones") %>%#
+	collect() %>%#
+  	mutate(Year=as.numeric(Year),#
+		NumNew = as.numeric(NumNew),#
+		cone_index = log(NumNew + 1),#
+		total_cones = 1.11568 * exp(0.1681 + 1.1891 * log(NumNew + 0.01))) # according to Krebs et al. 2012#
+#
+cones_grids_years <- group_by(cone_counts, Year, Grid) %>% #
+  summarise(num_trees = sum(!is.na(NumNew)),#
+            cone_counts = mean(NumNew, na.rm = TRUE),#
+            cone_index = mean(cone_index, na.rm = TRUE)) %>% #
+  mutate(Year_tp1 = Year+1,#
+         cone_index_t = ifelse(is.finite(cone_index), cone_index, NA))#
+#
+#link in cones from the previous year#
+#
+cone_temp<-cones_grids_years %>% #
+  select(Grid, Year, Year_tp1, cone_index_tm1=cone_index_t)#
+#
+cones<-left_join(cones_grids_years, cone_temp, by=c("Grid", "Year" = "Year_tp1")) %>% #
+  select(year=Year, grid=Grid, cone_index_t, cone_index_tm1)#
+#
+summary(cones)#
+tail(cones)     #
+mating<-bind_rows(new_beh, old_beh, ryan, jeff) %>%  #
+  	left_join(rep, by=c("squirrel_id", "year")) %>%#
+	left_join(cones, by=c("year"="year", "grid"="grid")) %>% #add cone stuff#
+  	mutate(gestation_days=fieldBDate-date, #
+  		gestation_age=year-mom_byear) %>%#
+  	mutate(gestation_days=as.numeric(gestation_days)) %>%#
+  	filter(#
+  		!is.na(n_pups), #NA for n_pups is due to lost litters#
+  		gestation_days>28, #
+  		gestation_days<40) %>% #remove errors due to: 1) mating chases coming after litter is born (i.e., possible lost litter); 2) multiple mating chases and multiple litters#
+	mutate(mast=ifelse(year %in% c(1993, 1998, 2005, 2010, 2014, 2019), 1, 0)) %>%#
+	group_by(squirrel_id, date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup() #
+#
+summary(mating) #
+head(mating)#
+nrow(mating) #166#
+str(mating)
+new_beh <- tbl(con, "behaviour") %>% #
+  	collect() %>%#
+  	left_join((tbl(con, "flastall2") %>% #
+  	collect() %>%#
+  	select(squirrel_id, sex)), by="squirrel_id") %>%#
+  	mutate(date=ymd(date)) %>% #
+  	mutate(year=year(date)) %>%#
+  	filter(#
+  		sex=="F",#
+  		comments!="",#
+  		!is.na(squirrel_id), #
+  		behaviour==7,#
+  		!(color_left %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!")),#
+  		!(color_right %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!"))) %>% #
+  	mutate(date=ymd(date)) %>% #
+  	select(squirrel_id, sex, color_left, color_right, comments, id) %>%#
+  	arrange(id)  #
+old_beh <- tbl(con, "dbabehaviour") %>% #
+  	collect() %>%#
+  	left_join((tbl(con, "flastall2") %>% #
+  	collect() %>%#
+  	select(squirrel_id, sex)), by="squirrel_id") %>%#
+  	mutate(date=ymd(date)) %>% #
+  	mutate(year=year(date)) %>%#
+  	filter(#
+  		year<2006,#
+  		sex=="F",#
+  		comments!="",#
+  		!is.na(squirrel_id), #
+  		beh==7, !(color_left %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!")),#
+  		!(color_right %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!"))) %>% #
+  	mutate(date=ymd(date)) %>% #
+  	select(squirrel_id, sex, color_left, color_right, comments, id) %>%#
+  	arrange(id)
+head(all)
+head(litter)
+head(juv)
+head(rep)
+head(new_beh)
+new_beh <- tbl(con, "behaviour") %>% #
+  	collect() %>%#
+  	group_by(squirrel_id, date) %>%#
+  	filter(#
+  		row_number()==1, #
+  		!is.na(squirrel_id), #
+  		behaviour==22 | id %in% c(1059, 3133, 3282, 3600, 13747, 23017, 30563, 39330, 39455, 39457, 49626, 49704, 49749, 49807, 49869, 49908, 49910, 50564, 50798, 50799, 50800, 50810, 50812, 50817, 51019, 51516, 52355, 52388, 53410, 78033, 78239, 78253, 78335, 78936, 79142, 79477, 80334, 80924, 95969, 96167, 96376, 96480, 97442, 97632, 104553, 104563, 104572, 104943, 104965, 104999, 105722, 106137, 106138, 106206, 106864, 107274, 107567, 107568, 107746, 107748, 108034, 108258, 109073, 109110, 109657, 120601, 120703, 121142, 125998, 126008, 126048, 126157, 127504, 131378, 131391, 182890, 183025, 183041, 184170, 184454, 184485, 184636, 184637, 375671, 382716, 384671, 384673, 389904, 389989, 410883)) %>% #
+  	mutate(date=ymd(date)) %>% #
+  	mutate(year=year(date)) %>%#
+  	select(squirrel_id, year, date, grid, time) %>%#
+  	ungroup()
+#importing Ryan Taylor's data#
+ryan<-read.csv("Chase data 2008.csv", header=T) %>%#
+	mutate(date=mdy(Date)) %>%#
+	mutate(year=year(date)) %>%#
+	group_by(dam_taglft, date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup() %>%#
+	left_join((tbl(con, "litter") %>% collect()), by=c("dam_taglft"="mTagLft", "year"="yr")) %>% #
+	select(squirrel_id, year, date, grid, time)
+head(ryan)
+head(mating)
+hist(mating$gestation_days)
+head(new_beh)
+new_beh
+options(scipen=999, dplyr.width = Inf, tibble.print_min = 5000, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror
+new_beh
+new_beh
+old_beh
+new_beh<-new_beh%>%  	filter (id %in% c(1059, 2902, 3029, 3133, 3144, 3268, 3282, 3305, 3364, 3414, 3460, 3532, 3600, 4814, 4957, 5760, 6011, 30563, 39330, 39455, 39457, 49626, 49704, 49749, 49807, 49908, 49910, 50564, 50731, 50798, 50799, 50800, 51019, 51516, 52355, 52388, 53410, 53867, 54997, 78003, 78033, 78239, 78253, 78335, 78752, 78936, 79142, 79477, 79478, 79480, 79610, 80334, 80924, 81965, 87939, 95969, 96167, 96376, 96425, 97249, 97442, 97632, 104553, 104563, 104572, 104943, 104965, 104999, 105722, 106137, 106138, 106206, 106236, 106864, 107274, 107567, 107569, 107746, 107748, 108034, 108258, 108713, 109073, 109110, 109657, 120601, 120703, 121142, 125998, 126008, 126048, 126157, 127504, 128497, 131378, 181921, 183025, 183041, 184170, 184454, 184636, 184637, 375671, 382802, 383817, 383822, 383991, 384671, 384673, 389507, 389588, 389904, 410883, 414662))
+head(new_beh)
+old_beh<-old_beh%>%  	filter(id %in% c(13747, 30563, 39330, 39455, 39457, 41515, 49626, 49704, 49749, 49807, 49908, 49910, 50564, 50798, 50799, 50800, 51019, 51516, 52355, 52388, 53410, 53867, 54997))
+head_old_beh
+head(old_beh)
+head(mating)
+nrow(mating) #675 effect sizes
+head(mating)
+mating %>% as_tibble() %>% count(squirrel_id) %>% nrow() #202 studies
+length(unique(mating$squirrel_id)) #146
+length(unique(mating$id)) #146
+mating %>% as_tibble() %>% count(id) %>% nrow() #146 species
+mating <- mating %>% group_by(squirrel_id, date, id) %>%#
+	filter(row_number()==1) %>%#
+	ungroup()
+nrow(mating) #174 records
+mating %>% as_tibble() %>% count(id) %>% nrow() #173 ids (this m)
+distinct(mating) |>
+filter(.by = id, n() > 1) #if this has anything except 0 as an output this means there is a problem
+hist(mating$gestation_days)
+mating2<-mating%>%#
+	group_by(squirrel_id, year) %>%#
+	filter(first(date))%>%#
+	ungroup()
+mating2<-mating%>%#
+	group_by(squirrel_id, year) %>%#
+	filter(first())%>%#
+	ungroup()
+mating2<-mating%>%#
+	group_by(squirrel_id, year) %>%#
+	filter(row_number()==1)%>%#
+	ungroup()
+nrow(mating2) #174 records
+distinct(mating2) |>
+filter(.by = id, n() > 1) #if this has anything except 0 as an output this means there are replicates that need to be dealt with
+mating2%>%filter(squirrel_id==24591)
+mating2<-mating%>%#
+	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year#
+	arrange_by(date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup()
+mating2<-mating%>%#
+	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year#
+	arrange(date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup()
+mating2%>%filter(squirrel_id==24591)
+#to see where things are repeated#
+distinct(mating2) |>#
+  filter(.by = id, n() > 1)
+mating<-mating%>%#
+	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year#
+	arrange(date) %>%#
+	filter(row_number()==1) %>%#
+	ungroup()
+hist(mating$gestation_days) #there are some possibly "impossible" values here
+summary(mating$gestation_days) #there are some possibly "impossible" values here
+mating%>%filter(gestation_days>37| gestation_days<30)
+new_beh%>%filter(squirrel_id %in% c(6495, 8330, 13688, 19865, 20415, 22031, 20529, 20295, 21350, 24409, 24002, 24356))
+old_beh%>%filter(squirrel_id %in% c(6495, 8330, 13688, 19865, 20415, 22031, 20529, 20295, 21350, 24409, 24002, 24356))
+old_beh%>%filter(squirrel_id %in% c(6495, 8330, 13688, 19865, 20415, 22031, 20529, 20295, 21350, 24409, 24002, 24356))
+ryan%>%filter(squirrel_id %in% c(6495, 8330, 13688, 19865, 20415, 22031, 20529, 20295, 21350, 24409, 24002, 24356))
+jeff%>%filter(squirrel_id %in% c(6495, 8330, 13688, 19865, 20415, 22031, 20529, 20295, 21350, 24409, 24002, 24356))
+mating%>%filter(gestation_days>39| gestation_days<30)
+mating%>%filter(gestation_days>38| gestation_days<30)

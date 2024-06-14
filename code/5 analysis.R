@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on May 15, 2024 by A. R. Martinig 
+#last edited on June 14, 2024 by A. R. Martinig 
 
 
 
@@ -10,7 +10,7 @@
 
 #mean center and standardize numerical variables before running model
 
-mating2<-mating %>% 
+mating2<-read.csv("final_dataset.csv") %>% 
 	ungroup() %>%
 	group_by(grid, year) %>%
 	mutate(
@@ -19,7 +19,7 @@ mating2<-mating %>%
 		n_pups=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),
 		n_pups = replace(n_pups, is.na(n_pups), 0),
 		#can't standardize cone_index_tm1
-		year=(year-2000)) %>%
+		year=(year-1995)) %>%
 	ungroup()
 
 summary(mating2)
