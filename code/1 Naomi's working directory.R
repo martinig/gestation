@@ -13,3 +13,5 @@ getwd() #this will give you your CURRENT working directory, you need to copy and
 
 ##set wd to the folder with all your csv's in it
 setwd("~/Documents/summer project/gestation/data")
+setwd("C:/Users/Owner/Documents/Gestation 2/gestation/data")
+
