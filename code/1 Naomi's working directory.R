@@ -1,6 +1,6 @@
 #working directory here
 #original code by A. R. Martinig
-#last edited May 15, 2024 by A. R. Martinig
+#last edited June 14, 2024 by N. J. Brunner
 
 #Delete previous information stored 
 rm(list=ls(all=T))
@@ -12,6 +12,5 @@ getwd() #this will give you your CURRENT working directory, you need to copy and
 #C:/Users/Programmar/Documents this is what you put below plus the extra stuff
 
 ##set wd to the folder with all your csv's in it
-setwd("~/Documents/summer project/gestation/data")
 setwd("C:/Users/Owner/Documents/Gestation 2/gestation/data")
 
