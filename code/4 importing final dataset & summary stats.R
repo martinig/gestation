@@ -12,6 +12,9 @@ gest<-read.csv("final_dataset.csv", header=T)
 #year range and sample sizes
 table(gest $year)
 
+#grid locations
+table(gest$grid)
+
 #masting and sample sizes
 table(gest $mast)
 
