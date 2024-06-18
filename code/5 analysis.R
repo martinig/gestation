@@ -1,8 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on June 14, 2024 by A. R. Martinig 
-
-
+#last edited on June 17, 2024 by A. R. Martinig 
 
 ##################################
 ###### Statistical analysis ######
@@ -10,34 +8,57 @@
 
 #mean center and standardize numerical variables before running model
 
-mating2<-gest %>% 
+final_df<-gest %>% 
 	ungroup() %>%
-	group_by(grid, year) %>%
+	group_by(grid) %>%
 	mutate(
-		gestation_age=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),
-		gestation_age = replace(gestation_age, is.na(gestation_age), 0),
-		n_pups=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),
-		n_pups = replace(n_pups, is.na(n_pups), 0),
+		mast=as.factor(mast),
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),
 		#can't standardize cone_index_tm1
-		year=(year-1995)) %>%
-	ungroup()
+		year_sd=(year-1995)) %>%
+	ungroup() 
 
-summary(mating2)
+summary(final_df)
+
+#correlations 
+attach(final_df);tt=cbind(gestation_age, litter_ratio, n_pups,  mast, cone_index_tm1)
+cor(tt) #highest value is 0.37
 
 #mean > var, #good to use logistic regression
 #if var > mean, then the data would be significantly overdispersed (variance > mean)
-mean(mating2$gestation_days)
-var(mating2$gestation_days)
+mean(final_df $gestation_days)
+var(final_df $gestation_days)
 
-plot(mating2$gestation_days)
+plot(final_df $gestation_days)
 
-model<-lmer(gestation_days ~ gestation_age + mast + n_pups + cone_index_tm1 + (1|year), data = mating2)
+#standardized model
+
+model_sd<-lmer(gestation_days ~ gestation_age_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + (1|year_sd), data = final_df)
+summary(model_sd)
+
+plot(model_sd) 
+hist(resid(model_sd))
+
+confint(model_sd, method='Wald')
+
+
+
+
+#model with variables not standardized
+model<-lmer(gestation_days ~ gestation_age + litter_ratio + n_pups + mast + cone_index_tm1 + (1|year), data = final_df)
 summary(model)
 
 plot(model) 
 hist(resid(model))
 
 confint(model,method='Wald')
+
+
 
 
 

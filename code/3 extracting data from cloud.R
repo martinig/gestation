@@ -1,6 +1,6 @@
 #all the data extraction and cleaning is here 
 #original code by A. R. Martinig
-#last edited on June 14, 2024 by A. R. Martinig 
+#last edited on June 17, 2024 by A. R. Martinig 
 
 
 ##############################
@@ -27,12 +27,17 @@ litter <- tbl(con, "litter") %>%
   	select(id, squirrel_id, year=yr, date1, fieldBDate, mom_byear=byear)
   	
 summary(litter)
+head(litter)
 
 juv <- tbl(con, "juvenile") %>% 
   	collect() %>%
   	group_by(litter_id) %>%
-  	mutate(n_pups=n()) %>% 
-  	select(litter_id, n_pups)
+  	mutate(n_pups=n(),
+  		total_males=sum(sex=="M"),
+  		litter_ratio=total_males/n_pups) %>% 
+  	select(litter_id, n_pups, litter_ratio)
+
+head(juv)
 
 rep<-left_join(litter, juv, by=c("id"="litter_id")) %>%
 	group_by(squirrel_id, date1) %>%
@@ -127,21 +132,24 @@ tail(cones)
      
 mating<-bind_rows(new_beh, old_beh, ryan, jeff) %>%  
   	left_join(rep, by=c("squirrel_id", "year")) %>%
+  	mutate(grid=ifelse(grid=="SX", "SU", grid)) %>%
 	left_join(cones, by=c("year"="year", "grid"="grid")) %>% #add cone stuff
   	mutate(gestation_days=fieldBDate-date, 
-  		gestation_age=year-mom_byear,
-  		grid=ifelse(grid=="SX", "SU", grid)) %>%
-  	mutate(gestation_days=as.numeric(gestation_days)) %>%
+  		gestation_age=year-mom_byear) %>%
+  	mutate(gestation_days=as.numeric(gestation_days),
+  		#only have values for BT starting in 2018, replaced with values from JO
+  		cone_index_t = ifelse(grid=="BT"& year==2017, 1.75, cone_index_t),
+  		cone_index_tm1 = ifelse(grid=="BT" & year==2017, 0.108, cone_index_tm1)) %>%
   	filter(
-  		!is.na(n_pups), #NA for n_pups is due to lost litters
+  		!is.na(n_pups), #NA for n_pups is due to lost litters (no usable records sadly)
   		gestation_days>28, 
   		gestation_days<40) %>% #remove errors due to: 1) mating chases coming after litter is born (i.e., possible lost litter); 2) multiple mating chases and multiple litters
-	mutate(mast=ifelse(year %in% c(1993, 1998, 2005, 2010, 2014, 2019), 1, 0)) %>%
+	mutate(mast=ifelse(year %in% c(1993, 1998, 2005, 2010, 2014, 2019, 2022), 1, 0)) %>%
 	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year
 	arrange(date) %>%
 	filter(row_number()==n()) %>% #when there are duplicates (more than one mating chase, I have kept the last record)
 	ungroup()
-
+	
 summary(mating) 
 head(mating)
 str(mating)
