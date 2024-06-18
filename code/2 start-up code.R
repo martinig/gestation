@@ -1,6 +1,6 @@
 #script to download packages and set formatting for plots
 #original code by A. R. Martinig
-#last edited on May 15, 2024 by A. R. Martinig 
+#last edited on June 18, 2024 by A. R. Martinig 
 
 options(scipen=999, dplyr.width = Inf, tibble.print_min = 50, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror
 
@@ -11,7 +11,13 @@ pacman::p_load(
 				tidyverse,
 				data.table,
 				lme4,
-               	krsp
+               	krsp,
+               	sjPlot,
+               	sjlabelled, 
+               	sjmisc,
+               	scales,
+               	ggplot2,
+               	ggeffects
 )
 
 select<-dplyr::select
