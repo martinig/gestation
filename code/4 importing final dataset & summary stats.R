@@ -1,6 +1,6 @@
 #importing final dataset we will be working with for analysis and summary stats for dataset we are working with
 #original code by A. R. Martinig
-#last edited on June 17, 2024 by A. R. Martinig 
+#last edited on June 18, 2024 by A. R. Martinig 
 
 #dataset we are using
 gest<-read.csv("final_dataset.csv", header=T)      
@@ -14,8 +14,8 @@ gest<-read.csv("final_dataset.csv", header=T)
 #summary stats - sample sizes
 ####################################
 
-nrow(mating) #174 records
-mating %>% as_tibble() %>% count(squirrel_id) %>% nrow() #160 females	
+nrow(gest) #174 records
+gest %>% as_tibble() %>% count(squirrel_id) %>% nrow() #160 females	
 
 #year range and sample sizes
 table(gest $year)
@@ -40,7 +40,7 @@ table(gest $gestation_days)
 #gestation length stats
 summary(gest $gestation_days)
 
-hist(mating$gestation_days)    
+hist(gest$gestation_days)    
 
 #stats for gestation length at each age (yearlings through 7 years old)   
 mom_age <- gest %>% 
