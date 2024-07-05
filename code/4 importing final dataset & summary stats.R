@@ -1,6 +1,6 @@
 #importing final dataset we will be working with for analysis and summary stats for dataset we are working with
 #original code by A. R. Martinig
-#last edited on June 18, 2024 by A. R. Martinig 
+#last edited on June 28, 2024 by N. Brunner
 
 #dataset we are using
 gest<-read.csv("final_dataset.csv", header=T)      
@@ -20,8 +20,11 @@ gest %>% as_tibble() %>% count(squirrel_id) %>% nrow() #160 females
 #year range and sample sizes
 table(gest $year)
 
-#grid locations
+#grid locations ##should also pull out grid year breakdown for coauthors
 table(gest$grid)
+
+##grid/year breakdown
+table(gest$year, gest$grid)
 
 #masting and sample sizes
 table(gest $mast)

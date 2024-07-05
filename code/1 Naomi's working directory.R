@@ -1,6 +1,6 @@
 #working directory here
 #original code by A. R. Martinig
-#last edited June 14, 2024 by N. J. Brunner
+#last edited June 25, 2024 by N. Brunner
 
 #Delete previous information stored 
 rm(list=ls(all=T))
