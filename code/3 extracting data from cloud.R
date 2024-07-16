@@ -1,6 +1,6 @@
 #all the data extraction and cleaning is here 
 #original code by A. R. Martinig
-#last edited on June 17, 2024 by A. R. Martinig 
+#last edited on July 16, 2024 by A. R. Martinig 
 
 
 ##############################
@@ -135,7 +135,8 @@ mating<-bind_rows(new_beh, old_beh, ryan, jeff) %>%
   	mutate(grid=ifelse(grid=="SX", "SU", grid)) %>%
 	left_join(cones, by=c("year"="year", "grid"="grid")) %>% #add cone stuff
   	mutate(gestation_days=fieldBDate-date, 
-  		gestation_age=year-mom_byear) %>%
+  		gestation_age=year-mom_byear,
+  		gestation_age2= gestation_age^2) %>%
   	mutate(gestation_days=as.numeric(gestation_days),
   		#only have values for BT starting in 2018, replaced with values from JO
   		cone_index_t = ifelse(grid=="BT"& year==2017, 1.75, cone_index_t),

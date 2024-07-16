@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on June 17, 2024 by A. R. Martinig 
+#last edited on July 16, 2024 by A. R. Martinig 
 
 ##################################
 ###### Statistical analysis ######
@@ -15,6 +15,8 @@ final_df<-gest %>%
 		mast=as.factor(mast),
 		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),
 		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),
 		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),
 		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),
 		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),
@@ -26,8 +28,10 @@ final_df<-gest %>%
 summary(final_df)
 
 #correlations 
-attach(final_df);tt=cbind(gestation_age, litter_ratio, n_pups,  mast, cone_index_tm1)
-cor(tt) #highest value is 0.37
+attach(final_df);tt=cbind(gestation_age, gestation_age2, litter_ratio, n_pups,  mast, cone_index_tm1)
+cor(tt) 
+#gestation_age & gestation_age2 are highly correlated (0.98) #should not keep both in the analysis
+#highest value is 0.37
 
 #mean > var, #good to use logistic regression
 #if var > mean, then the data would be significantly overdispersed (variance > mean)
