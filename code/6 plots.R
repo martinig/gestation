@@ -38,7 +38,6 @@ d<-plot(ggpredict(model_sd, terms = "mast"))+
 	labs(x="Spruce mast year", y="Gestation length (days)", title="") +
 	scale_y_continuous(breaks = c(34, 35, 36))+ 
 	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1))+
-	theme_squirrel 	
-	
-	
+	theme_squirrel 
+		
 cowplot::plot_grid(b, d, labels=c("(a)", "(b)"), ncol = 2, nrow =1, align = "hv", label_x=0.9, label_y=0.95)

@@ -32,6 +32,12 @@ table(gest $mast)
 #gestation age and sample size
 table(gest $gestation_age) 
 
+#intermast interval
+m_data<-c(1998, 2005, 2010, 2014, 2019, 2022) 
+mean(m_data)
+#you'll need to figure out how to convert this to years (hint: package lubridate)
+#then you will need to calculate the average time between masts and the SD
+
 
 ####################################
 #gestation length stats
