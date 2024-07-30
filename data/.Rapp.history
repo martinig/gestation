@@ -60,51 +60,71 @@ theme_squirrel_dot <- #
         text = element_text(size = 10))
 #dataset we are using#
 gest<-read.csv("final_dataset.csv", header=T)
-final_df<-gest %>% #
-	ungroup() %>%#
-	group_by(grid) %>%#
-	mutate(#
-		mast=as.factor(mast),#
-		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
-		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
-		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
-		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
-		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
-		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
-		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),#
-		#can't standardize cone_index_tm1#
-		year_sd=(year-1995)) %>%#
-	ungroup()
-model_sd<-lmer(gestation_days ~ gestation_age_sd + litter_ratio_sd + n_pups_sd*mast + cone_index_tm1 + (1|year_sd), data = final_df)
-summary(model_sd)
-confint(model_sd, method='Wald')
-plot(ggpredict(model_sd, terms = "n_pups_sd:mast1"))+ #
-	labs(x="Spruce mast year", y="Gestation length (days)", title="")
-plot(ggpredict(model_sd, terms = "n_pups_sd*mast1"))+ #
-	labs(x="Spruce mast year", y="Gestation length (days)", title="")
-plot(ggpredict(model_sd, terms = "n_pups_sd:mast"))+ #
-	labs(x="Spruce mast year", y="Gestation length (days)", title="")
-ggplot(final_df, aes(x= n_pups_sd, y= gestation_days, colour=mast))
-ggplot(final_df, aes(x= n_pups_sd, y= gestation_days, colour=mast))+ #
-	geom_box()
-ggplot(final_df, aes(x= n_pups_sd, y= gestation_days, colour=mast))+ #
-	geom_boxplot()
-ggplot(final_df, aes(x= n_pups_sd, y= gestation_days, colour=mast))+ #
-	geom_point()
-ggplot(final_df, aes(x= n_pups_sd, y= gestation_days, colour=mast))+ #
-	geom_point() + #
-	geom_line()
-plot(ggpredict(model_sd, terms = "mast"))+ #
-	labs(x="Spruce mast year", y="Gestation length (days)", title="") +#
-	scale_y_continuous(breaks = c(34, 35, 36))+ #
-	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1))+#
-	theme_squirrel
-plot(ggpredict(model_sd, terms = "n_pups_sd", colour=mast))
-plot(ggpredict(model_sd, colorAsFactor=TRUE, interactive=TRUE))
-ggplot(final_df, aes(x=n_pups_sd, gestation_days, colour=mast))
-ggplot(final_df, aes(x=n_pups_sd, gestation_days, colour=mast))	+ geom_line()
-ggplot(final_df, aes(x=n_pups_sd, gestation_days, colour=mast))	+ geom_point() + geom_smooth()
-ggplot(final_df, aes(x=n_pups_sd, gestation_days, colour=mast))	+ geom_point() + geom_smooth(formula=y~x)
-ggplot(final_df, aes(x=n_pups_sd, gestation_days, colour=mast))	+ geom_point() + geom_smooth(method="lm", formula=y~x)
-confint(model_sd, method='Wald')
+m_data <- c(19930101, 19980101, 20050101, 20100101, 20140101, 20190101, 20220101)
+m_data <- c(1993, 1998, 2005, 2010, 2014, 2019, 2022)
+m_data <- year(m_data)
+m_data <- m_data %>% mutate(year(m_data))
+m_data
+m_data <- (year=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+m_data
+m_data <- data.frame(year=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+m_data
+m_data <- m_data %>% mutate(year(m_data))
+m_data <- m_data %>% mutate(year(year))
+m_data <- m_data %>% mutate(year = year(year))
+m_data <- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+m_data <- m_data %>% mutate(year = year(yr))
+m_data <- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+m_data <- m_data %>% mutate(yr = year(yr))
+m_data <- m_data %>% mutate(yr = ymd(yr))
+m_data <- as.Date(as.character(yr), format = "%Y")
+m_data <- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+m_data <- as.Date(as.character(yr), format = "%Y")
+yr <- as.Date(as.character(yr), format = "%Y")
+m_data <- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+yr <- as.Date(as.character(yr), format = "%Y")
+yrs <- c(1993, 1998, 2005, 2010, 2014, 2019, 2022)
+yr <- as.Date(as.character(yrs), format = "%Y")
+y <- year(yr)
+y
+mean(y)
+y
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+head(df)
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+mutate(yr=year(yr))
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+mutate(diff=yr-lag(yr))
+head(df)
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+mutate(diff=yr-lag(yr),
+mean_diff=mean(diff))
+head(df)
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+mutate(diff=yr-lag(yr),
+mean_diff=mean(diff, na.rm=T))
+head(df)
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+mutate(diff=yr-lag(yr),
+mean_diff=mean(diff, na.rm=T),
+sd_diff=sd(diff, na.rm=T))
+head(df)
+df=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)
+df
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022))
+df
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%#
+	mutate(diff=yr-lag(yr), #takes the row in question and substracts the value from the row before it (row 2- row 1)
+)
+df
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%#
+	mutate(diff=yr-lag(yr), #takes the row in question and substracts the value from the row before it (row 2- row 1)#
+		mean_diff=mean(diff)
+)
+df
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%#
+	mutate(diff=yr-lag(yr), #takes the row in question and substracts the value from the row before it (row 2- row 1)#
+		mean_diff=mean(diff, na.rm=T),#
+		sd_diff=sd(diff, na.rm=T))
+head(df)
+df

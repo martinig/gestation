@@ -1,6 +1,6 @@
 #importing final dataset we will be working with for analysis and summary stats for dataset we are working with
 #original code by A. R. Martinig
-#last edited on July 23, 2024 by N. Brunner
+#last edited on July 30, 2024 by A. R. Martinig
 
 #dataset we are using
 gest<-read.csv("final_dataset.csv", header=T)      
@@ -34,19 +34,11 @@ table(gest $gestation_age)
 
 #intermast interval
 #original mast year data: (1993, 1998, 2005, 2010, 2014, 2019, 2022) 
-m_data <- c(19930101, 19980101, 20050101, 20100101, 20140101, 20190101, 20220101)
-m_data <- ymd(m_data)
-
-library(pastecs)
-days_btwn_masts <- diff(m_data)
-days_btwn_masts
-years_btwn_masts <- daystoyears(days_btwn_masts)
-years_btwn_masts
-
-mean(m_data)
-#you'll need to figure out how to convert this to years (hint: package lubridate)
-#then you will need to calculate the average time between masts and the SD
-
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%
+	mutate(diff=yr-lag(yr), #takes the row in question and substracts the value from the row before it (row 2- row 1)
+		mean_diff=mean(diff, na.rm=T),
+		sd_diff=sd(diff, na.rm=T))
+df
 
 ####################################
 #gestation length stats
