@@ -7,6 +7,10 @@ rm(list=ls(all=T))#
 #
 ##set wd to the folder with all your csv's in it#
 setwd("~/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data")
+#script to download packages and set formatting for plots#
+#original code by A. R. Martinig#
+#last edited on June 18, 2024 by A. R. Martinig #
+#
 options(scipen=999, dplyr.width = Inf, tibble.print_min = 50, repos='http://cran.rstudio.com/') #scipen forces outputs to not be in scientific notation #dplyr.width will show all columns for head() function and tibble.print_min sets how many rows are printed and repos sets the cran mirror#
 #
 #load libraries#
@@ -54,12 +58,101 @@ theme_squirrel_dot <- #
         panel.border = element_blank(),#
         panel.background = element_blank(),#
         text = element_text(size = 10))
-#all the data extraction and cleaning is here #
+#importing final dataset we will be working with for analysis and summary stats for dataset we are working with#
 #original code by A. R. Martinig#
-#last edited on July 16, 2024 by A. R. Martinig #
-###############################
-#  importing  data and formatting it  ##
-###############################
+#last edited on August 23, 2024 by A. R. Martinig#
+#
+#dataset we are using#
+gest<-read.csv("final_dataset.csv", header=T)      #
+#
+#################################
+###### Summary statistics #######
+#################################
+#####################################
+#summary stats - sample sizes#
+#####################################
+#
+nrow(gest) #174 records#
+gest %>% as_tibble() %>% count(squirrel_id) %>% nrow() #160 females	#
+#
+#year range and sample sizes#
+table(gest $year)#
+#
+#grid locations ##should also pull out grid year breakdown for coauthors#
+table(gest$grid)#
+#
+##grid/year breakdown#
+table(gest$year, gest$grid)#
+#
+#masting and sample sizes#
+table(gest $mast)#
+#
+#gestation age and sample size#
+table(gest $gestation_age) #
+#
+#intermast interval#
+#original mast year data: (1993, 1998, 2005, 2010, 2014, 2019, 2022) #
+df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%#
+	mutate(diff=yr-lag(yr), #takes the row in question and substracts the value from the row before it (row 2- row 1)#
+		mean_diff=mean(diff, na.rm=T),#
+		sd_diff=sd(diff, na.rm=T))#
+df#
+#
+#####################################
+#gestation length stats#
+#####################################
+#
+#gestation length in days and sample size#
+table(gest $gestation_days)#
+#
+#gestation length stats#
+summary(gest $gestation_days)#
+#
+hist(gest$gestation_days)    #
+#
+#to get female sample size at each age#
+#
+#stats for gestation length at each age (yearlings through 7 years old)   #
+mom_age <- gest %>% #
+		group_by(gestation_age) %>%#
+		mutate(avg=mean(gestation_days), #
+			min=min(gestation_days), #
+			max=max(gestation_days), #
+			med=median(gestation_days),#
+			sd=sd(gestation_days)) %>%#
+		filter(row_number()==1) %>%#
+		arrange(gestation_age)#
+#
+mom_age %>% select(gestation_age, avg, sd, min, max, med) #
+#
+gest %>% filter(gestation_age>6) #
+#
+#to get female sample size at each age#
+gest %>% filter(gestation_age==1)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #19 females	#
+gest %>% filter(gestation_age==2)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #56 females	#
+gest %>% filter(gestation_age==3)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #42 females	#
+gest %>% filter(gestation_age==4)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #22 females	#
+gest %>% filter(gestation_age==5)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #23 females	#
+gest %>% filter(gestation_age==6)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #10 females	#
+gest %>% filter(gestation_age==7)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #2 females
+final_df<-gest %>% #
+	ungroup() %>%#
+	group_by(grid) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),#
+		#can't standardize cone_index_tm1#
+		year_sd=(year-1995)) %>%#
+	ungroup()
+model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data = final_df)
+#################
 #
 #import Data#
 con <- krsp_connect (host = "krsp.cepb5cjvqban.us-east-2.rds.amazonaws.com",#
@@ -196,10 +289,18 @@ mating<-bind_rows(new_beh, old_beh, ryan, jeff) %>%  #
 	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year#
 	arrange(date) %>%#
 	filter(row_number()==n()) %>% #when there are duplicates (more than one mating chase, I have kept the last record)#
-	ungroup()#
+	ungroup() %>%#
+	mutate(treatment = case_when( #
+	grid == "AG" & year >= 2004 & year <= 2017 ~ "food", #
+	grid == "LL" & year >= 2005 & year <= 2011 ~ "food", #
+	grid == "JO" & year >= 2006 & year <= 2012 ~ "food", #
+	grid == "LL" & year >= 2012 & year <= 2022 ~ "GC", #
+	(grid == "JO" | grid == "BT") & year >= 2015 & year <= 2022 ~ "GC", #
+		TRUE ~ "control" ))#
 summary(mating) #
 head(mating)#
 str(mating)#
+#
 #homework#
 #investigate outliers for gestation_days #
 #make sure there are no sample sizes duplicates in final dataset after all the merging#
@@ -229,64 +330,60 @@ table(mating$year)#
 distinct(mating) |>#
   filter(.by = id, n() > 1) #if this has anything except 0 as an output this means there are replicates that need to be dealt with #
 #
-write.csv(mating, "/Users/april-martinig/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data/final_dataset.csv") 	#
-#############################################################
-#############################################################
-#manually checking the LTD for records that could be mating chases#
-#############################################################
-#############################################################
+write.csv(mating, "/Users/april-martinig/Documents/Files/Post-docs/UofC/Naomi (PURE)/gestation/data/final_dataset.csv")
+gest<-read.csv("final_dataset.csv", header=T)
+head(gest)
+final_df<-gest %>% #
+	ungroup() %>%#
+	group_by(grid) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),#
+		#can't standardize cone_index_tm1#
+		year_sd=(year-1995)) %>%#
+	ungroup() #
 #
-#how I did this:#
+summary(final_df)
+final_df<-gest %>% #
+	ungroup() %>%#
+	group_by(grid) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		treatment=as.factor(treatment),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),#
+		#can't standardize cone_index_tm1#
+		year_sd=(year-1995)) %>%#
+	ungroup() #
 #
-#I pulled up all beh = 7 observations that could ACTUALLY be MATING CHASES because the mating chases could have been recorded as interactions instead#
-#went through all the comments manually and looked for "MC", "mating chase", "copulation", or some version of these words#
-#after I went through the records, I added the ids to the filter functions above for the relevant datasets#
-### IMPORTANT ####
-#before ~ 2005/2006 males did not have pipe cleaners, so their colours look EXACTLY THE SAME as female colours (hence, I merged the behaviour records with the flastall records to filter out males)#
-new_beh_checks <- tbl(con, "behaviour") %>% #
-  	collect() %>%#
-  	left_join((tbl(con, "flastall2") %>% #
-  	collect() %>%#
-  	select(squirrel_id, sex)), by="squirrel_id") %>%#
-  	mutate(date=ymd(date)) %>% #
-  	mutate(year=year(date)) %>%#
-  	filter(#
-  		sex=="F",#
-  		comments!="",#
-  		!is.na(squirrel_id), #
-  		behaviour==7,#
-  		!(color_left %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!")),#
-  		!(color_right %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!"))) %>% #
-  	mutate(date=ymd(date)) %>% #
-  	select(squirrel_id, sex, color_left, color_right, comments, id) %>%#
-  	arrange(id)  #
-new_beh_checks  #
-old_beh_checks <- tbl(con, "dbabehaviour") %>% #
-  	collect() %>%#
-  	left_join((tbl(con, "flastall2") %>% #
-  	collect() %>%#
-  	select(squirrel_id, sex)), by="squirrel_id") %>%#
-  	mutate(date=ymd(date)) %>% #
-  	mutate(year=year(date)) %>%#
-  	filter(#
-  		year<2006,#
-  		sex=="F",#
-  		comments!="",#
-  		!is.na(squirrel_id), #
-  		beh==7, !(color_left %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!")),#
-  		!(color_right %in% c("B*", "R*", "Y*", "W*","O*", "G*", "R!", "W!", "Y!", "G!", "B!", "BK!", "Bk!", "O!", "P!"))) %>% #
-  	mutate(date=ymd(date)) %>% #
-  	#select(squirrel_id, sex, color_left, color_right, comments, id) %>%#
-  	arrange(id) #
-old_beh_checks
-mating2<-matinig%>%
-mutate(treatment=case_when(
-treatment = case_when( grid == "AG" & year %in% 2004:2017 ~ "food", grid == "LL" & year %in% 2005:2011 ~ "food", grid == "JO" & year %in% 2006:2012 ~ "food", grid == "LL" & year %in% 2012:2022 ~ "GC", (grid == "JO" | grid == "BT") & year %in% 2015:2022 ~ "GC", TRUE ~ "control" ))
-)
-mating2<-mating%>%#
-	mutate(treatment=case_when(#
-		treatment = case_when( grid == "AG" & year %in% 2004:2017 ~ "food", grid == "LL" & year %in% 2005:2011 ~ "food", grid == "JO" & year %in% 2006:2012 ~ "food", grid == "LL" & year %in% 2012:2022 ~ "GC", (grid == "JO" | grid == "BT") & year %in% 2015:2022 ~ "GC", TRUE ~ "control" )))
-mating2<-mating%>%#
-mutate(treatment = case_when( grid == "AG" & year >= 2004 & year <= 2017 ~ "food", grid == "LL" & year >= 2005 & year <= 2011 ~ "food", grid == "JO" & year >= 2006 & year <= 2012 ~ "food", grid == "LL" & year >= 2012 & year <= 2022 ~ "GC", (grid == "JO" | grid == "BT") & year >= 2015 & year <= 2022 ~ "GC", TRUE ~ "control" ))
-head(mating2)
-mating2%>%filter(grid=="BT")
+summary(final_df)
+model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data = final_df)
+summary(model_sd)
+model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control")))
+summary(model_sd)
+model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+summary(model)
+plot(model_sd)
+hist(resid(model_sd))
+confint(model_sd, method='Wald')
+#model with variables not standardized#
+model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))#
+summary(model)#
+#
+plot(model) #
+hist(resid(model))#
+#
+confint(model,method='Wald')

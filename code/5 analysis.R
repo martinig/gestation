@@ -13,6 +13,7 @@ final_df<-gest %>%
 	group_by(grid) %>%
 	mutate(
 		mast=as.factor(mast),
+		treatment=as.factor(treatment),
 		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),
 		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),
 		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),
@@ -42,7 +43,7 @@ plot(final_df $gestation_days)
 
 #standardized model
 
-model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + (1|year_sd), data = final_df)
+model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
 summary(model_sd)
 
 plot(model_sd) 
@@ -54,24 +55,10 @@ confint(model_sd, method='Wald')
 
 
 #model with variables not standardized
-model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + (1|year), data = final_df)
+model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
 summary(model)
 
 plot(model) 
 hist(resid(model))
 
 confint(model,method='Wald')
-
-
-citation("lme4")
-
-
-
-
-
-
-
-
-
-
-
