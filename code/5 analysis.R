@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on July 30, 2024 by N. Brunner 
+#last edited on December 4, 2024 by A. R. Martinig
 
 ##################################
 ###### Statistical analysis ######
@@ -42,7 +42,7 @@ plot(final_df $gestation_days)
 
 #standardized model
 
-model_sd<-lmer(gestation_days ~ gestation_age_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + (1|year_sd), data = final_df)
+model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + (1|year_sd), data = final_df)
 summary(model_sd)
 
 plot(model_sd) 
@@ -54,7 +54,7 @@ confint(model_sd, method='Wald')
 
 
 #model with variables not standardized
-model<-lmer(gestation_days ~ gestation_age + litter_ratio + n_pups + mast + cone_index_tm1 + (1|year), data = final_df)
+model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + (1|year), data = final_df)
 summary(model)
 
 plot(model) 

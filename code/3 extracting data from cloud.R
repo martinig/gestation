@@ -1,6 +1,6 @@
 #all the data extraction and cleaning is here 
 #original code by A. R. Martinig
-#last edited on July 16, 2024 by A. R. Martinig 
+#last edited on December 4, 2024 by A. R. Martinig 
 
 
 ##############################
@@ -149,12 +149,18 @@ mating<-bind_rows(new_beh, old_beh, ryan, jeff) %>%
 	group_by(squirrel_id, year) %>% #use year here instead of date so that it keeps the first mating chase record for that year
 	arrange(date) %>%
 	filter(row_number()==n()) %>% #when there are duplicates (more than one mating chase, I have kept the last record)
-	ungroup()
+	ungroup() %>%
+	mutate(treatment = case_when( 
+	grid == "AG" & year >= 2004 & year <= 2017 ~ "food", 
+	grid == "LL" & year >= 2005 & year <= 2011 ~ "food", 
+	grid == "JO" & year >= 2006 & year <= 2012 ~ "food", 
+	grid == "LL" & year >= 2012 & year <= 2022 ~ "GC", 
+	(grid == "JO" | grid == "BT") & year >= 2015 & year <= 2022 ~ "GC", 
+		TRUE ~ "control" ))
 	
 summary(mating) 
 head(mating)
 str(mating)
-
 
 #homework
 #investigate outliers for gestation_days 
