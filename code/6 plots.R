@@ -1,6 +1,6 @@
 #code to generate plots
 #original code by A. R. Martinig
-#last edited on June 18, 2024 by A. R. Martinig 
+#last edited on December 4, 2024 by N. Brunner
 
 
 #dot and whisker plots of model coefficients
@@ -41,6 +41,7 @@ d<-plot(ggpredict(model_sd, terms = "mast"))+
   scale_y_continuous(breaks = seq(28, 40, by = 2)) + 
 	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1)) +
 	theme_squirrel 
-		
-cowplot::plot_grid(b, d, labels=c("(a)", "(b)"), ncol = 2, nrow =1, align = "hv", label_x=0.9, label_y=0.95)
 
+#still might want to make x labels & points closer together?
+		
+cowplot::plot_grid(b, d, labels=c("(a)", "(b)"), ncol = 2, nrow =1, align = "hv", label_x=0.9, label_y=0.95, rel_widths = c(1.75, 1))
