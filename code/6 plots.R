@@ -24,7 +24,8 @@ b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+
 	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+
 	scale_y_continuous(breaks = pretty_breaks(5))+ 
 	theme_squirrel +
-	labs(x="Maternal age (years)", y="Gestation length (days)")
+	labs(x="Maternal age (years)", y="Gestation length (days)") +
+  scale_y_continuous(breaks = seq(30, 40, by = 2))
 
 c<-ggplot(gest, aes(x= as.factor(mast), y= gestation_days)) + 
 	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+
@@ -36,7 +37,7 @@ c<-ggplot(gest, aes(x= as.factor(mast), y= gestation_days)) +
 
 d<-plot(ggpredict(model_sd, terms = "mast"))+ 
 	labs(x="Spruce mast year", y="Gestation length (days)", title="") +
-	scale_y_continuous(breaks = c(34, 35, 36))+ 
+  scale_y_continuous(breaks = seq(30, 40, by = 2)) + 
 	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1))+
 	theme_squirrel 
 		
