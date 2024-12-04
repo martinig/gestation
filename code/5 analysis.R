@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on July 16, 2024 by A. R. Martinig 
+#last edited on July 30, 2024 by N. Brunner 
 
 ##################################
 ###### Statistical analysis ######
@@ -63,7 +63,7 @@ hist(resid(model))
 confint(model,method='Wald')
 
 
-
+citation("lme4")
 
 
 

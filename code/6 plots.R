@@ -41,3 +41,5 @@ d<-plot(ggpredict(model_sd, terms = "mast"))+
 	theme_squirrel 
 		
 cowplot::plot_grid(b, d, labels=c("(a)", "(b)"), ncol = 2, nrow =1, align = "hv", label_x=0.9, label_y=0.95)
+
+?cowplot
