@@ -22,25 +22,25 @@ plot_model(model_sd,
 b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+
 	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+
 	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+
-	scale_y_continuous(breaks = pretty_breaks(5))+ 
-	theme_squirrel +
+  coord_cartesian(ylim = c(28, 40)) +
+  scale_y_continuous(breaks = seq(28, 40, by = 2)) +
 	labs(x="Maternal age (years)", y="Gestation length (days)") +
-  scale_y_continuous(breaks = seq(30, 40, by = 2))
+  theme_squirrel
 
 c<-ggplot(gest, aes(x= as.factor(mast), y= gestation_days)) + 
 	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+
 	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+
 	scale_y_continuous(breaks = pretty_breaks(5))+ 
-	labs(x="Spruce mast year", y="Gestation length (days)")+
-	scale_x_discrete(labels=c("Non-mast year", "Mast year"))+
+	labs(x="Spruce mast year", y="Gestation length (days)") +
+	scale_x_discrete(labels=c("Non-mast year", "Mast year")) +
 	theme_squirrel
 
 d<-plot(ggpredict(model_sd, terms = "mast"))+ 
 	labs(x="Spruce mast year", y="Gestation length (days)", title="") +
-  scale_y_continuous(breaks = seq(30, 40, by = 2)) + 
-	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1))+
+  coord_cartesian(ylim = c(28, 40)) +
+  scale_y_continuous(breaks = seq(28, 40, by = 2)) + 
+	scale_x_continuous(labels=c("Non-mast year", "Mast year"), breaks=c(0, 1)) +
 	theme_squirrel 
 		
 cowplot::plot_grid(b, d, labels=c("(a)", "(b)"), ncol = 2, nrow =1, align = "hv", label_x=0.9, label_y=0.95)
 
-?cowplot
