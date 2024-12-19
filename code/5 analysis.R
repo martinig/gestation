@@ -14,6 +14,7 @@ final_df<-gest %>%
 	mutate(
 		mast=as.factor(mast),
 		treatment=as.factor(treatment),
+		gestation_yearling=as.factor(gestation_yearling),
 		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),
 		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),
 		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),
