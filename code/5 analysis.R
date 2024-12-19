@@ -52,7 +52,7 @@ hist(resid(model_sd))
 confint(model_sd, method='Wald')
 
 #variance inflation factor for standardized model
-vif(model_sd)
+car::vif(model_sd)
 
 #model with variables not standardized
 model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
