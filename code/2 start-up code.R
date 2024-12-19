@@ -17,7 +17,8 @@ pacman::p_load(
                	sjmisc,
                	scales,
                	ggplot2,
-               	ggeffects
+               	ggeffects,
+				car
 )
 
 select<-dplyr::select
