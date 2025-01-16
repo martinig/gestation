@@ -32,6 +32,9 @@ table(gest $mast)
 #gestation age and sample size
 table(gest $gestation_age) 
 
+#litter number
+table(gest$litter_number)
+
 #intermast interval
 #original mast year data: (1993, 1998, 2005, 2010, 2014, 2019, 2022) 
 df<- data.frame(yr=c(1993, 1998, 2005, 2010, 2014, 2019, 2022)) %>%

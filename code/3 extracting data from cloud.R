@@ -1,6 +1,6 @@
 #all the data extraction and cleaning is here 
 #original code by A. R. Martinig
-#last edited on December 19, 2024 by A. R. Martinig 
+#last edited on January 16, 2025 by A. R. Martinig 
 
 
 ##############################
@@ -24,7 +24,7 @@ litter <- tbl(con, "litter") %>%
   	filter(!is.na(squirrel_id)) %>%
   	mutate(fieldBDate=ymd(fieldBDate)) %>%
   	left_join(all, by=c("squirrel_id")) %>%
-  	select(id, squirrel_id, year=yr, date1, fieldBDate, mom_byear=byear)
+  	select(id, squirrel_id, year=yr, date1, fieldBDate, mom_byear=byear, litter_number=ln)
   	
 summary(litter)
 head(litter)
