@@ -1,6 +1,6 @@
 #importing final dataset we will be working with for analysis and summary stats for dataset we are working with
 #original code by A. R. Martinig
-#last edited on August 23, 2024 by A. R. Martinig
+#last edited on January 23, 2025 by A. R. Martinig
 
 #dataset we are using
 gest<-read.csv("final_dataset.csv", header=T)      
@@ -81,27 +81,9 @@ gest %>% filter(gestation_age==5)  %>% as_tibble() %>% count(squirrel_id) %>% nr
 gest %>% filter(gestation_age==6)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #10 females	
 gest %>% filter(gestation_age==7)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #2 females	
 
-#get combined gestation length of 2-6 year old females
+#get combined gestation length of 2-6 year old females, inclusive
 prime_age <- gest %>%
   filter(gestation_age >= 2 & gestation_age <= 6)
+  
 mean(prime_age$gestation_days)
 sd(prime_age$gestation_days)
-
-
-
-
-
-prime_age <- gest %>%
-  filter(gestation_age >= 2 & gestation_age <= 6) %>%
-  mutate(avg=mean(gestation_days), 
-         min=min(gestation_days), 
-         max=max(gestation_days), 
-         med=median(gestation_days),
-         sd=sd(gestation_days)) %>%
-  filter(row_number()==1) %>%
-  arrange(gestation_age)
-
-prime_age %>% select(gestation_age, avg, sd, min, max, med) 
-
-  
-
