@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on December 19, 2024 by N. Brunner
+#last edited on February 10, 2025 by A. R. Martinig
 
 ##################################
 ###### Statistical analysis ######
@@ -44,7 +44,7 @@ plot(final_df $gestation_days)
 
 #standardized model
 
-model_sd<-lmer(gestation_days ~ gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
 summary(model_sd)
 
 plot(model_sd) 
@@ -55,11 +55,12 @@ confint(model_sd, method='Wald')
 #variance inflation factor for standardized model
 car::vif(model_sd)
 
+
 #model with variables not standardized
-model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
-summary(model)
+#model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+#summary(model)
 
-plot(model) 
-hist(resid(model))
+#plot(model) 
+#hist(resid(model))
 
-confint(model,method='Wald')
+#confint(model,method='Wald')
