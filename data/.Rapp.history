@@ -60,9 +60,10 @@ theme_squirrel_dot <- #
         panel.background = element_blank(),#
         text = element_text(size = 10))
 gest<-read.csv("final_dataset.csv", header=T)
+head(gest)
 final_df<-gest %>% #
 	ungroup() %>%#
-	group_by(grid) %>%#
+	group_by(grid, year) %>%#
 	mutate(#
 		mast=as.factor(mast),#
 		treatment=as.factor(treatment),#
@@ -77,16 +78,44 @@ final_df<-gest %>% #
 		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),#
 		#can't standardize cone_index_tm1#
 		year_sd=(year-1995)) %>%#
+	ungroup()
+summary(final_df)
+final_df<-gest %>% #
+	ungroup() %>%#
+	group_by(grid, year) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		treatment=as.factor(treatment),#
+		gestation_yearling=as.factor(gestation_yearling),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
+	ungroup() %>%#
+		#can't standardize cone_index_tm1#
+	mutate(year_sd=(year-1995)) %>%#
 	ungroup() #
 #
 summary(final_df)
 model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
 summary(model_sd)
 confint(model_sd, method='Wald')
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+summary(model_sd)
+confint(model_sd, method='Wald')
+model<-lmer(gestation_days ~ gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+confint(model,method='Wald')
+confint(model_sd, method='Wald')
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+confint(model_sd, method='Wald')
 a<-plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),#
-	order.terms = c(1,2,3,4,5,6,7,8),#
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio/n-litter size Interaction"),#
+	order.terms = c(1,2,3,4,5,6,7,8,9),#
 	colors=c("#000000"),#
 	transform=NULL, #plots the untransformed output/estimates#
 	sort.est=TRUE, #
@@ -97,16 +126,16 @@ a<-plot_model(model_sd, #
 	vline.color="lightgrey") + #
 	label_angle(base.theme = theme_squirrel) +#
 	theme(axis.text.y = element_text(lineheight = 0.7))
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+confint(model_sd, method='Wald')
 plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),#
-	order.terms = c(1,2,3,4,5,6,7,8),#
-	colors=c("#000000")
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio/n-litter size Interaction")
 )
 plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),#
-	order.terms = c(1,2,3,4,5,6,7,8),#
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio\n-litter size interaction"),#
+	order.terms = c(1,2,3,4,9,5,6,7,8),#
 	colors=c("#000000"),#
 	transform=NULL, #plots the untransformed output/estimates#
 	sort.est=TRUE, #
@@ -116,22 +145,9 @@ plot_model(model_sd, #
 	axis.title="Estimates ± 95% CIs",#
 	vline.color="lightgrey")
 plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),#
-	order.terms = c(1,2,3,4,5,6,7,8),#
-	colors=c("#000000"),#
-	transform=NULL, #plots the untransformed output/estimates#
-	sort.est=TRUE, #
-	show.values=TRUE, #
-	value.offset=0.3, #
-	title = "",#
-	axis.title="Estimates ± 95% CIs",#
-	vline.color="lightgrey") + #
-	label_angle(base.theme = theme_squirrel)
-plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),#
-	order.terms = c(1,2,3,4,5,6,7,8),#
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\nlitter size interaction"),#
+	order.terms = c(1,2,3,4,9,5,6,7,8),#
 	colors=c("#000000"),#
 	transform=NULL, #plots the untransformed output/estimates#
 	sort.est=TRUE, #
@@ -142,6 +158,35 @@ plot_model(model_sd, #
 	vline.color="lightgrey") + #
 	label_angle(base.theme = theme_squirrel) +#
 	theme(axis.text.y = element_text(lineheight = 0.7))
+plot_model(model_sd, #
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\n size interaction"),#
+	order.terms = c(1,2,3,4,9,5,6,7,8),#
+	colors=c("#000000"),#
+	transform=NULL, #plots the untransformed output/estimates#
+	sort.est=TRUE, #
+	show.values=TRUE, #
+	value.offset=0.3, #
+	title = "",#
+	axis.title="Estimates ± 95% CIs",#
+	vline.color="lightgrey") + #
+	label_angle(base.theme = theme_squirrel) +#
+	theme(axis.text.y = element_text(lineheight = 0.7))
+a<-plot_model(model_sd, #
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\n size interaction"),#
+	order.terms = c(1,2,3,4,9,5,6,7,8),#
+	colors=c("#000000"),#
+	transform=NULL, #plots the untransformed output/estimates#
+	sort.est=TRUE, #
+	show.values=TRUE, #
+	value.offset=0.3, #
+	title = "",#
+	axis.title="Estimates ± 95% CIs",#
+	vline.color="lightgrey") + #
+	label_angle(base.theme = theme_squirrel) +#
+	theme(axis.text.y = element_text(lineheight = 0.7))#
+#
 b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+#
 	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+#
 	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+#

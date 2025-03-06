@@ -1,14 +1,14 @@
 #code to generate plots
 #original code by A. R. Martinig
-#last edited on Feburary 10, 2025 by A. R. Martinig
+#last edited on March 6, 2025 by A. R. Martinig
 
 
 #dot and whisker plots of model coefficients
 
 a<-plot_model(model_sd, 
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC"),
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental"),
-	order.terms = c(1,2,3,4,5,6,7,8),
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\n size interaction"),
+	order.terms = c(1,2,3,4,9,5,6,7,8),
 	colors=c("#000000"),
 	transform=NULL, #plots the untransformed output/estimates
 	sort.est=TRUE, 

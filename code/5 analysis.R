@@ -1,6 +1,6 @@
 #analysis investigating factors that may affect gestation length
 #original code by A. R. Martinig
-#last edited on February 10, 2025 by A. R. Martinig
+#last edited on March 6, 2025 by A. R. Martinig
 
 ##################################
 ###### Statistical analysis ######
@@ -10,7 +10,7 @@
 
 final_df<-gest %>% 
 	ungroup() %>%
-	group_by(grid) %>%
+	group_by(grid, year) %>%
 	mutate(
 		mast=as.factor(mast),
 		treatment=as.factor(treatment),
@@ -22,9 +22,10 @@ final_df<-gest %>%
 		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),
 		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),
 		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0),
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%
+	ungroup() %>%
 		#can't standardize cone_index_tm1
-		year_sd=(year-1995)) %>%
+	mutate(year_sd=(year-1995)) %>%
 	ungroup() 
 
 summary(final_df)
@@ -44,7 +45,7 @@ plot(final_df $gestation_days)
 
 #standardized model
 
-model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd + n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
 summary(model_sd)
 
 plot(model_sd) 
@@ -57,7 +58,7 @@ car::vif(model_sd)
 
 
 #model with variables not standardized
-#model<-lmer(gestation_days ~ gestation_age2 + litter_ratio + n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+#model<-lmer(gestation_days ~ gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
 #summary(model)
 
 #plot(model) 
