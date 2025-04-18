@@ -8,7 +8,7 @@
 
 #mean center and standardize numerical variables before running model
 
-final_df<-gest %>% 
+final_df<-gest_CV %>% 
 	ungroup() %>%
 	group_by(grid, year) %>%
 	mutate(
@@ -52,6 +52,8 @@ plot(model_sd)
 hist(resid(model_sd))
 
 confint(model_sd, method='Wald')
+
+MuMIn::r.squaredGLMM(model_sd) #R2m = 0.1166382 R2c = 0.338059
 
 #variance inflation factor for standardized model
 car::vif(model_sd)
