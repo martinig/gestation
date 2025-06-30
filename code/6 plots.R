@@ -1,6 +1,6 @@
 #code to generate plots
 #original code by A. R. Martinig
-#last edited on March 6, 2025 by A. R. Martinig
+#last edited on June 30, 2025 by A. R. Martinig
 
 
 #dot and whisker plots of model coefficients
@@ -28,7 +28,7 @@ b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+
 	labs(x="Maternal age (years)", y="Gestation length (days)") +
   theme_squirrel
 		
-cowplot::plot_grid(a, b, labels=c("(a)", "(b)"), ncol = 2, label_x=0.9, label_y=0.95)
+cowplot::plot_grid(b, a, labels=c("(a)", "(b)"), ncol = 2, label_x=0.9, label_y=0.95, rel_widths = c(1, 1.3))
 
 
 

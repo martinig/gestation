@@ -59,8 +59,6 @@ theme_squirrel_dot <- #
         panel.border = element_blank(),#
         panel.background = element_blank(),#
         text = element_text(size = 10))
-#dataset we are using#
-gest<-read.csv("final_dataset.csv", header=T)
 #importing final dataset we will be working with for analysis and summary stats for dataset we are working with#
 #original code by A. R. Martinig#
 #last edited on January 23, 2025 by A. R. Martinig#
@@ -147,6 +145,25 @@ prime_age <- gest %>%#
   filter(gestation_age >= 2 & gestation_age <= 6)#
 mean(prime_age$gestation_days)#
 sd(prime_age$gestation_days)
+final_df<-gest_CV %>% #
+	ungroup() %>%#
+	group_by(grid, year) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		treatment=as.factor(treatment),#
+		gestation_yearling=as.factor(gestation_yearling),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
+	ungroup() %>%#
+		#can't standardize cone_index_tm1#
+	mutate(year_sd=(year-1995)) %>%#
+	ungroup()
 final_df<-gest %>% #
 	ungroup() %>%#
 	group_by(grid, year) %>%#
@@ -166,121 +183,33 @@ final_df<-gest %>% #
 		#can't standardize cone_index_tm1#
 	mutate(year_sd=(year-1995)) %>%#
 	ungroup()
-model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category#
-summary(model_sd)
-MuMIn::r.squaredGLMM(model_sd)
-model<-lmer(gestation_days ~ gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
-MuMIn::r.squaredGLMM(model) #R2m = 0.1166382 R2c = 0.338059
-#calc the coeff of variation#
-CV <- function(x){#
-        (sd(x)/mean(x))#
-}
-#merging growth rate to behavioural and OFT data #####
-gest_CV<-gest%>%#
-			mutate(CV_gestation_age =(CV(gestation_age)))
-final_df<-gest_CV %>% #
-	ungroup() %>%#
-	group_by(grid, year) %>%#
-	mutate(#
-		mast=as.factor(mast),#
-		treatment=as.factor(treatment),#
-		gestation_yearling=as.factor(gestation_yearling),#
-		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
-		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
-		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
-		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
-		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
-		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
-		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
-	ungroup() %>%#
-		#can't standardize cone_index_tm1#
-	mutate(year_sd=(year-1995)) %>%#
-	ungroup()
-mean(final_df $CV_gestation_days)
 head(final_df)
-#merging growth rate to behavioural and OFT data #####
-gest_CV<-gest%>%#
-			group(squirrel_id) %>% #
-			mutate(CV_gestation_age =(CV(gestation_age)))
-#merging growth rate to behavioural and OFT data #####
-gest_CV<-gest%>%#
-			group_by(squirrel_id) %>% #
-			mutate(CV_gestation_age =(CV(gestation_age)))
-final_df<-gest_CV %>% #
-	ungroup() %>%#
-	group_by(grid, year) %>%#
-	mutate(#
-		mast=as.factor(mast),#
-		treatment=as.factor(treatment),#
-		gestation_yearling=as.factor(gestation_yearling),#
-		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
-		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
-		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
-		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
-		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
-		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
-		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
-	ungroup() %>%#
-		#can't standardize cone_index_tm1#
-	mutate(year_sd=(year-1995)) %>%#
-	ungroup()
-mean(final_df $CV_gestation_days)
-CV_gestation_days
-#merging growth rate to behavioural and OFT data #####
-gest_CV<-gest%>%#
-			group_by(squirrel_id) %>% #
-			mutate(CV_gestation_days =(CV(gestation_days)))#
-final_df<-gest_CV %>% #
-	ungroup() %>%#
-	group_by(grid, year) %>%#
-	mutate(#
-		mast=as.factor(mast),#
-		treatment=as.factor(treatment),#
-		gestation_yearling=as.factor(gestation_yearling),#
-		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
-		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
-		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
-		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
-		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
-		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
-		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
-	ungroup() %>%#
-		#can't standardize cone_index_tm1#
-	mutate(year_sd=(year-1995)) %>%#
-	ungroup()
-mean(final_df $CV_gestation_days)
-CV_gestation_days
-est_CV
-gest_CV
-gest_CV
-growth rate to behavioural and OFT data #####
-gest_CV<-gest%>%#
-			mutate(CV_gestation_days =(CV(gestation_days)))
-final_df<-gest_CV %>% #
-	ungroup() %>%#
-	group_by(grid, year) %>%#
-	mutate(#
-		mast=as.factor(mast),#
-		treatment=as.factor(treatment),#
-		gestation_yearling=as.factor(gestation_yearling),#
-		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
-		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
-		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
-		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
-		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
-		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
-		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
-		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
-	ungroup() %>%#
-		#can't standardize cone_index_tm1#
-	mutate(year_sd=(year-1995)) %>%#
-	ungroup()
-CV_gestation_days
-mean(final_df $CV_gestation_days)
-CV_gestation_days
-var(final_df $CV_gestation_days)
-final_df $CV_gestation_days
-model_sd<-glmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd), data= transform(final_df, treatment =relevel(treatment, "control")), family="poisson")
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd) + (1|squirrel_id), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+summary(model_sd)
+plot(model_sd)
+hist(resid(model_sd))
+confint(model_sd, method='Wald')
+a<-plot_model(model_sd, #
+	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
+	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experiemental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\n size interaction"),#
+	order.terms = c(1,2,3,4,9,5,6,7,8),#
+	colors=c("#000000"),#
+	transform=NULL, #plots the untransformed output/estimates#
+	sort.est=TRUE, #
+	show.values=TRUE, #
+	value.offset=0.3, #
+	title = "",#
+	axis.title="Estimates ± 95% CIs",#
+	vline.color="lightgrey") + #
+	label_angle(base.theme = theme_squirrel) +#
+	theme(axis.text.y = element_text(lineheight = 0.7))#
+#
+b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+#
+	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+#
+	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+#
+  coord_cartesian(ylim = c(28, 40)) +#
+  scale_y_continuous(breaks = seq(28, 40, by = 2)) +#
+	labs(x="Maternal age (years)", y="Gestation length (days)") +#
+  theme_squirrel
+cowplot::plot_grid(b, a, labels=c("(a)", "(b)"), ncol = 2, label_x=0.9, label_y=0.95)
+cowplot::plot_grid(b, a, labels=c("(a)", "(b)"), ncol = 2, label_x=0.9, label_y=0.95, rel_widths = c(1, 1.3))
