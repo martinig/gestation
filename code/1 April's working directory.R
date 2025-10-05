@@ -6,4 +6,4 @@
 rm(list=ls(all=T))
 
 ##set wd to the folder with all your csv's in it
-setwd("~/Documents/Files/Manuscripts/Co-authored manuscripts/Brunner et al. 202X/gestation/data")      
+setwd("~/Documents/Files/Manuscripts/Published/Brunner et al. 2025/gestation/data")      

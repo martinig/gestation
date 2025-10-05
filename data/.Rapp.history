@@ -7,6 +7,7 @@ rm(list=ls(all=T))#
 #
 ##set wd to the folder with all your csv's in it#
 setwd("~/Documents/Files/Manuscripts/Co-authored manuscripts/Brunner et al. 202X/gestation/data")
+setwd("~/Documents/Files/Manuscripts/Published/Brunner et al. 2025/gestation/data")
 #script to download packages and set formatting for plots#
 #original code by A. R. Martinig#
 #last edited on June 18, 2024 by A. R. Martinig #
@@ -59,10 +60,6 @@ theme_squirrel_dot <- #
         panel.border = element_blank(),#
         panel.background = element_blank(),#
         text = element_text(size = 10))
-#importing final dataset we will be working with for analysis and summary stats for dataset we are working with#
-#original code by A. R. Martinig#
-#last edited on January 23, 2025 by A. R. Martinig#
-#
 #dataset we are using#
 gest<-read.csv("final_dataset.csv", header=T)      #
 #
@@ -129,32 +126,10 @@ mom_age <- gest %>% #
 #
 mom_age %>% select(gestation_age, avg, sd, min, max, med) #
 #
-gest %>% filter(gestation_age>6) #
-#
-#to get female sample size at each age#
-gest %>% filter(gestation_age==1)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #19 females	#
-gest %>% filter(gestation_age==2)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #56 females	#
-gest %>% filter(gestation_age==3)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #42 females	#
-gest %>% filter(gestation_age==4)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #22 females	#
-gest %>% filter(gestation_age==5)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #23 females	#
-gest %>% filter(gestation_age==6)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #10 females	#
-gest %>% filter(gestation_age==7)  %>% as_tibble() %>% count(squirrel_id) %>% nrow() #2 females	#
-#
-#get combined gestation length of 2-6 year old females, inclusive#
-prime_age <- gest %>%#
-  filter(gestation_age >= 2 & gestation_age <= 6)#
-mean(prime_age$gestation_days)#
-sd(prime_age$gestation_days)
-#analysis investigating factors that may affect gestation length#
-#original code by A. R. Martinig#
-#last edited on June 30, 2025 by A. R. Martinig#
-#
-###################################
-###### Statistical analysis #######
-###################################
-#
-#mean center and standardize numerical variables before running model#
-#
+gest %>% filter(gestation_age>6)
+head(df)
+head(gest)
+table(gest$litter_number)
 final_df<-gest %>% #
 	ungroup() %>%#
 	group_by(grid, year) %>%#
@@ -173,65 +148,36 @@ final_df<-gest %>% #
 	ungroup() %>%#
 		#can't standardize cone_index_tm1#
 	mutate(year_sd=(year-1995)) %>%#
-	ungroup() #
-#
-summary(final_df)#
-#
-#correlations #
-attach(final_df);tt=cbind(gestation_age, gestation_age2, litter_ratio, n_pups,  mast, cone_index_tm1)#
-cor(tt) #
-#gestation_age & gestation_age2 are highly correlated (0.98) #should not keep both in the analysis#
-#highest value is 0.37#
-#
-#mean > var, #good to use logistic regression#
-#if var > mean, then the data would be significantly overdispersed (variance > mean)#
-mean(final_df $gestation_days)#
-var(final_df $gestation_days)#
-#
-plot(final_df $gestation_days)#
-#
-#standardized model#
-#
-model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd) + (1|squirrel_id), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category#
-summary(model_sd)#
-#
-plot(model_sd) #
-hist(resid(model_sd))#
-#
-confint(model_sd, method='Wald')#
-#
-MuMIn::r.squaredGLMM(model_sd) #R2m = 0.1166382 R2c = 0.338059#
-#
-#variance inflation factor for standardized model#
-car::vif(model_sd)#
-#model with variables not standardized#
-#model<-lmer(gestation_days ~ gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))#
-#summary(model)#
-#
-#plot(model) #
-#hist(resid(model))#
-#
-#confint(model,method='Wald')
-a<-plot_model(model_sd, #
-	terms = c("gestation_age_sd", "gestation_age2_sd", "litter_ratio_sd", "n_pups_sd", "cone_index_tm1", "mast1", "treatmentfood", "treatmentGC", "litter_ratio_sd:n_pups_sd"),#
-	axis.labels=c("gestation_age_sd"="Maternal age", "gestation_age2_sd"=expression(Maternal~age^2),  "litter_ratio_sd"="Litter sex ratio",  "n_pups_sd"="Litter size", "cone_index_tm1"="Previous year\ncone abundance", "mast1"="Spruce mast\nyear", "treatmentfood"="Food add", "treatmentGC"="Experimental", "litter_ratio_sd:n_pups_sd"="Litter sex ratio x\n size interaction"),#
-	order.terms = c(1,2,3,4,9,5,6,7,8),#
-	colors=c("#000000"),#
-	transform=NULL, #plots the untransformed output/estimates#
-	sort.est=TRUE, #
-	show.values=TRUE, #
-	value.offset=0.3, #
-	title = "",#
-	axis.title="Estimates ± 95% CIs",#
-	vline.color="lightgrey") + #
-	label_angle(base.theme = theme_squirrel) +#
-	theme(axis.text.y = element_text(lineheight = 0.7))#
-#
-b<-ggplot(gest, aes(x= as.factor(gestation_age), y= gestation_days))+#
-	geom_boxplot(outlier.shape=NA, varwidth=TRUE, na.rm=TRUE)+#
-	geom_jitter(colour="darkgrey", position = position_jitter(width = .2))+#
-  coord_cartesian(ylim = c(28, 40)) +#
-  scale_y_continuous(breaks = seq(28, 40, by = 2)) +#
-	labs(x="Maternal age (years)", y="Gestation length (days)") +#
-  theme_squirrel#
-cowplot::plot_grid(b, a, labels=c("(a)", "(b)"), ncol = 2, label_x=0.9, label_y=0.95, rel_widths = c(1, 1.3))
+	ungroup()
+lmer(gestation_days ~ litter_number + gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+summary(model)
+model<-lmer(gestation_days ~ litter_number + gestation_age2 + litter_ratio*n_pups + mast + cone_index_tm1 + treatment + (1|year), data= transform(final_df, treatment =relevel(treatment, "control")))
+summary(model)
+confint(model,method='Wald')
+final_df<-gest %>% #
+	ungroup() %>%#
+	group_by(grid, year) %>%#
+	mutate(#
+		mast=as.factor(mast),#
+		treatment=as.factor(treatment),#
+		litter_number_sd=((litter_number-mean(litter_number))/(1*(sd(litter_number)))),#
+		litter_number_sd = replace(litter_number, is.na(litter_number), 0),#
+		gestation_yearling=as.factor(gestation_yearling),#
+		gestation_age_sd=((gestation_age-mean(gestation_age))/(1*(sd(gestation_age)))),#
+		gestation_age_sd = replace(gestation_age_sd, is.na(gestation_age_sd), 0),#
+		gestation_age2_sd=((gestation_age2-mean(gestation_age2))/(1*(sd(gestation_age2)))),#
+		gestation_age2_sd = replace(gestation_age2_sd, is.na(gestation_age2_sd), 0),#
+		n_pups_sd=((n_pups-mean(n_pups, na.rm=T))/(1*(sd(n_pups, na.rm=T)))),#
+		n_pups_sd = replace(n_pups_sd, is.na(n_pups_sd), 0),#
+		litter_ratio_sd =((litter_ratio-mean(litter_ratio, na.rm=T))/(1*(sd(litter_ratio, na.rm=T)))),#
+		litter_ratio_sd = replace(litter_ratio_sd, is.na(litter_ratio_sd), 0)) %>%#
+	ungroup() %>%#
+		#can't standardize cone_index_tm1#
+	mutate(year_sd=(year-1995)) %>%#
+	ungroup()
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + (1|year_sd) + (1|squirrel_id), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+summary(model_sd)
+confint(model_sd, method='Wald')
+model_sd<-lmer(gestation_days ~ gestation_age_sd + gestation_age2_sd + litter_ratio_sd*n_pups_sd + mast + cone_index_tm1 + treatment + litter_number_sd+ (1|year_sd) + (1|squirrel_id), data= transform(final_df, treatment =relevel(treatment, "control"))) #relevel is to make the control the reference category
+summary(model_sd)
+confint(model_sd, method='Wald')
